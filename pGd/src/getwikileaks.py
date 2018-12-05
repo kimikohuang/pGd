@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-  
 
-import httplib
+import http.client
 import os
 import sys
 import ftplib
 import re
 
 
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 import time
 import random
 import subprocess
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import time
 
 
 def getKimiHtml(kimiUrl):
-    httplib.HTTPConnection.debuglevel = 1
+    http.client.HTTPConnection.debuglevel = 1
     #request = urllib2.Request('http://diveintomark.org/xml/atom.xml')
 #    request = urllib2.Request('http://213.251.145.96/reldate/2010-12-08_0.html')
-    request = urllib2.Request(kimiUrl)
+    request = urllib.request.Request(kimiUrl)
     
     request.add_header('Accept-encoding', 'gzip')        
-    opener = urllib2.build_opener()
+    opener = urllib.request.build_opener()
     f = opener.open(request)
     compresseddata = f.read()
     len(compresseddata)
     
-    import StringIO
-    compressedstream = StringIO.StringIO(compresseddata)   
+    import io
+    compressedstream = io.StringIO(compresseddata)   
     
     import gzip
     gzipper = gzip.GzipFile(fileobj=compressedstream)      
@@ -70,11 +70,11 @@ class MyHTMLParser(HTMLParser):
 #            if data == u'Browse by creation':  
             if data == self.findDataStop:  
                 
-                print 'the stop string was found!: '+ data
+                print('the stop string was found!: '+ data)
                 self.stop = True  
                 return  
             self.htmlData.append(data)  
-            print data
+            print(data)
   
         # 出現台中地區  
         # 設定旗標以通知後面幾次呼叫記下資訊  
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     
 #    conn.close()
     html_code = getKimiHtml('http://213.251.145.96/cablegate.html')
-    print html_code
+    print(html_code)
 #    exit()
     
 
@@ -137,10 +137,10 @@ if __name__ == "__main__":
     hp.findDataStop = 'Browse by creation'
     hp.feed(html_code)
     hp.close()
-    print "hp.links: "
-    print hp.links
-    print "htmlData: "
-    print hp.htmlData
+    print("hp.links: ")
+    print(hp.links)
+    print("htmlData: ")
+    print(hp.htmlData)
 #    exit()
 #===============================================================================
 #    for myDate in hp.links[2:3]:
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 #    for myDate in hp.links[0:]:
     for myDate in [w for w in hp.links[0:] if len(w)==26]:
 #    for myDate in myDateTmp:
-        print 'myDate: ', myDate
+        print('myDate: ', myDate)
 #        conn = httplib.HTTPConnection("213.251.145.96")
 #        #conn.request("GET", "/reldate/2010-12-08_0.html")
 #        headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
@@ -185,22 +185,22 @@ if __name__ == "__main__":
 #        del hp
         hp = MyHTMLParser()
         hp.findDataStart = 'Browse by '+myDate[9:13]+'/'+myDate[14:16]+'/'+myDate[17:19]
-        print "hp.findDataStart: " + hp.findDataStart
+        print("hp.findDataStart: " + hp.findDataStart)
         hp.findDataStop = "Reference ID"
 
         try:
             hp.feed(html_code)
         except:
-            print html_code
+            print(html_code)
             raise
-        print "hp.links: "
-        print hp.htmlData
-        print "htmlData: "
+        print("hp.links: ")
+        print(hp.htmlData)
+        print("htmlData: ")
         numKeep = 1
         for i in hp.htmlData:
             if (i.isdigit() and int(i)>numKeep):
                 numKeep = int(i)
-        print "max numKeep: ", numKeep
+        print("max numKeep: ", numKeep)
 #        lReleaseDate = hp.htmlData 
 #        print lReleaseDate
 #        exit()
@@ -226,19 +226,19 @@ if __name__ == "__main__":
 #            html_code = getKimiHtml('http://213.251.145.96/cablegate.html')
             
     #        print html_code
-            print 'start parser record: '
+            print('start parser record: ')
             hp = MyHTMLParser()
 #            hp.reset
             hp.findDataStart = 'Created'
             hp.findDataStop = ".."
             hp.feed(html_code)
-            print "hp.links record: "
-            print hp.links
+            print("hp.links record: ")
+            print(hp.links)
 #            exit()
 #            tokensTmp = [w for w in tokens if w.isalpha() and (w.lower() not in myStopwords)]
 #       
             lCableLinks = [i for i in hp.links if i[0:7]=="/cable/"]
-            print "lCalbeLinks: ", lCableLinks
+            print("lCalbeLinks: ", lCableLinks)
 #            print "htmlData: "
 #            print hp.htmlData
             hp.close()
@@ -248,15 +248,15 @@ if __name__ == "__main__":
 #            for myUrl2 in lCableLinks:
 #                print myUrl2  
             for myUrl2 in lCableLinks:
-                print 'myUrl2: ', myUrl2
+                print('myUrl2: ', myUrl2)
 #                FileNameTraining = '.'+myUrl2[0:-5]+'.txt'
                 FileNameTraining = '/home/kimiko'+myUrl2[0:-5]+'.txt'
-                print "FileNameTraining: ", FileNameTraining
+                print("FileNameTraining: ", FileNameTraining)
                 if os.path.isfile(FileNameTraining):
-                    print FileNameTraining, 'Already exist: ', myUrl2
+                    print(FileNameTraining, 'Already exist: ', myUrl2)
                     continue
                 FileNameTrainingTmp = '/home/kimiko/cable_'+time.strftime("%y%m%d")+myUrl2[0:-5]+'.txt'
-                print "FileNameTrainingTmp: ", FileNameTrainingTmp
+                print("FileNameTrainingTmp: ", FileNameTrainingTmp)
 #                exit()
 #                conn = httplib.HTTPConnection("213.251.145.96")
 #                print 'New article myUrl: ' + myUrl2
@@ -273,12 +273,12 @@ if __name__ == "__main__":
                 html_code = getKimiHtml('http://213.251.145.96'+myUrl2)
 #                html_code = getKimiHtml('http://213.251.145.96/cablegate.html')
 
-                print 'start parser record: '
+                print('start parser record: ')
                 hp = MyHTMLParser()
     #            hp.reset
 
                 hp.findDataStart = 'Released'
-                print "hp.findDataStart: " + hp.findDataStart
+                print("hp.findDataStart: " + hp.findDataStart)
                 hp.findDataStop = "NO END Text"
 
                 hp.feed(html_code)
@@ -316,8 +316,8 @@ if __name__ == "__main__":
 #                    eachFile.write(' '.join(hp.htmlData).replace('¶','\n'))
 #                    eachFile.write(hp.htmlData.encode("utf-8"))
                 idxTotalFile = idxTotalFile+1
-                print 'save file number: '+ str(idxTotalFile)
+                print('save file number: '+ str(idxTotalFile))
 
-                print 'sleep!'
+                print('sleep!')
                 time.sleep(random.randint(sleepSecMin,sleepSecMax))
 exit()
